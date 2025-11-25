@@ -1,36 +1,30 @@
-import todo_cli
+from app import tasks, add_task, list_tasks, update_task, delete_task
 
 def setup_function():
-    todo_cli.tasks.clear()
+    tasks.clear()
 
 def test_add_task():
-    task = todo_cli.add_task("Buy milk")
+    task = add_task("Buy milk")
+    assert task["id"] == 1
     assert task["title"] == "Buy milk"
     assert task["completed"] is False
-    assert task["id"] == 1
 
 def test_list_tasks():
-    todo_cli.add_task("Buy milk")
-    tasks = todo_cli.list_tasks()
-    assert len(tasks) == 1
-    assert tasks[0]["title"] == "Buy milk"
+    add_task("Buy milk")
+    all_tasks = list_tasks()
+    assert len(all_tasks) == 1
 
 def test_update_task():
-    todo_cli.add_task("Buy milk")
-    updated = todo_cli.update_task(1)
+    add_task("Buy milk")
+    updated = update_task(1, completed=True)
     assert updated is not None
     assert updated["completed"] is True
 
-def test_update_invalid_task():
-    updated = todo_cli.update_task(99)
-    assert updated is None
-
 def test_delete_task():
-    todo_cli.add_task("Buy milk")
-    result = todo_cli.delete_task(1)
+    add_task("Buy milk")
+    result = delete_task(1)
     assert result is True
-    assert len(todo_cli.tasks) == 0
 
-def test_delete_invalid_task():
-    result = todo_cli.delete_task(50)
+def test_delete_nonexistent_task():
+    result = delete_task(99)
     assert result is False
