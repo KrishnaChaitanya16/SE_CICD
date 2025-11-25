@@ -31,7 +31,7 @@ pipeline {
                 expression { currentBuild.currentResult == "SUCCESS" }
             }
             steps {
-                sh '/usr/local/bin/docker build -t $IMAGE .'
+                sh 'DOCKER_CONFIG=/tmp /usr/local/bin/docker build -t $IMAGE .'
             }
         }
 
@@ -41,6 +41,7 @@ pipeline {
                                                   usernameVariable: 'USER',
                                                   passwordVariable: 'PASS')]) {
                     sh """
+                      DOCKER_CONFIG=/tmp
                       echo \$PASS | /usr/local/bin/docker login -u \$USER --password-stdin
                       /usr/local/bin/docker push $IMAGE
                     """
