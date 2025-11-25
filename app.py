@@ -2,8 +2,8 @@ from flask import Flask, request, jsonify
 
 app = Flask(__name__)
 
+# In-memory task store
 tasks = []
-task_id = 1
 
 @app.get("/")
 def home():
@@ -11,15 +11,16 @@ def home():
 
 @app.post("/tasks")
 def add_task():
-    global task_id
     data = request.get_json()
+
+    # Generate ID based on current list size
     task = {
-        "id": task_id,
+        "id": len(tasks) + 1,
         "title": data.get("title", ""),
         "completed": False
     }
+
     tasks.append(task)
-    task_id += 1
     return jsonify(task), 201
 
 @app.get("/tasks")
