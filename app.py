@@ -1,49 +1,79 @@
-from flask import Flask, request, jsonify
-
-app = Flask(__name__)
+import argparse
 
 # In-memory task store
 tasks = []
 
-@app.get("/")
-def home():
-    return jsonify({"message": "To-Do List API is running!"})
-
-@app.post("/tasks")
-def add_task():
-    data = request.get_json()
-
-    # Generate ID based on current list size
+def add_task(title):
     task = {
         "id": len(tasks) + 1,
-        "title": data.get("title", ""),
+        "title": title,
         "completed": False
     }
-
     tasks.append(task)
-    return jsonify(task), 201
+    return task
 
-@app.get("/tasks")
 def list_tasks():
-    return jsonify(tasks), 200
+    return tasks
 
-@app.put("/tasks/<int:id>")
-def update_task(id):
+def update_task(task_id):
     for task in tasks:
-        if task["id"] == id:
-            data = request.get_json()
-            task["title"] = data.get("title", task["title"])
-            task["completed"] = data.get("completed", task["completed"])
-            return jsonify(task), 200
-    return jsonify({"error": "Task not found"}), 404
+        if task["id"] == task_id:
+            task["completed"] = True
+            return task
+    return None
 
-@app.delete("/tasks/<int:id>")
-def delete_task(id):
+def delete_task(task_id):
     for task in tasks:
-        if task["id"] == id:
+        if task["id"] == task_id:
             tasks.remove(task)
-            return jsonify({"message": "Task deleted"}), 200
-    return jsonify({"error": "Task not found"}), 404
+            return True
+    return False
+
+
+def main():
+    parser = argparse.ArgumentParser(description="To-Do List CLI")
+
+    parser.add_argument("command", choices=["add", "list", "update", "delete"])
+    parser.add_argument("--title", help="Task title")
+    parser.add_argument("--id", type=int, help="Task ID")
+
+    args = parser.parse_args()
+
+    if args.command == "add":
+        if not args.title:
+            print("Please provide a title using --title")
+        else:
+            task = add_task(args.title)
+            print(f"Task added: {task['title']}")
+
+    elif args.command == "list":
+        all_tasks = list_tasks()
+        if not all_tasks:
+            print("No tasks found")
+        for task in all_tasks:
+            status = "Completed" if task["completed"] else "Pending"
+            print(f"{task['id']}. {task['title']} - {status}")
+
+    elif args.command == "update":
+        if not args.id:
+            print("Please provide an ID using --id")
+        else:
+            updated = update_task(args.id)
+            if updated:
+                print("Task marked as completed")
+            else:
+                print("Task not found")
+
+    elif args.command == "delete":
+        if not args.id:
+            print("Please provide an ID using --id")
+        else:
+            deleted = delete_task(args.id)
+            if deleted:
+                print("Task deleted")
+            else:
+                print("Task not found")
+
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+    main()
