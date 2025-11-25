@@ -2,45 +2,34 @@ pipeline {
     agent any
 
     environment {
-        IMAGE = "prathamchawdhry/ci-cd-demo2:jenkins"
-        VENV = ".venv"
-        PYTHON = "/usr/bin/python3" 
-    }
+    IMAGE = "krishnachaitanya1605/imt2023039:latest"
+}
+
 
     stages {
 
         stage('Checkout') {
             steps {
-                checkout([$class: 'GitSCM',
-                  branches: [[name: '*/main']],
-                  userRemoteConfigs: [[
-                    url: 'https://github.com/pratham-chawdhry/ci-cd-demo2.git',
-                    credentialsId: 'github-creds'
-                  ]]
-                ])
-            }
-        }
-
-        stage('Create Virtual Environment') {
-            steps {
-                sh '$PYTHON -m venv $VENV'
-                sh '$VENV/bin/pip install --upgrade pip'
+                checkout scm
             }
         }
 
         stage('Install Dependencies') {
             steps {
-                sh '$VENV/bin/pip install -r requirements.txt'
+                sh 'pip install -r requirements.txt'
             }
         }
 
         stage('Run Tests') {
             steps {
-                sh '$VENV/bin/pytest -v'
+                sh 'pytest -v'
             }
         }
 
         stage('Build Docker Image') {
+            when {
+                expression { currentBuild.currentResult == "SUCCESS" }
+            }
             steps {
                 sh 'docker build -t $IMAGE .'
             }
@@ -48,7 +37,7 @@ pipeline {
 
         stage('Push Docker Image') {
             steps {
-                withCredentials([usernamePassword(credentialsId: 'dockerhub-creds',
+                withCredentials([usernamePassword(credentialsId: 'Docker-creds',
                                                   usernameVariable: 'USER',
                                                   passwordVariable: 'PASS')]) {
                     sh '''
@@ -56,17 +45,6 @@ pipeline {
                       docker push $IMAGE
                     '''
                 }
-            }
-        }
-
-        stage('Deploy Container') {
-            steps {
-                sh '''
-                  docker pull $IMAGE
-                  docker stop ci-cd-demo || true
-                  docker rm ci-cd-demo || true
-                  docker run -d -p 5000:5000 --name ci-cd-demo $IMAGE
-                '''
             }
         }
     }
