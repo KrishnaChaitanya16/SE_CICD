@@ -4,6 +4,8 @@ This project implements a simple **To-Do List Command Line Application** in Pyth
 
 The pipeline ensures that every change is automatically tested and containerized before deployment.
 
+This Repo includes Screenshots of Output Logs and Pipline Overview
+
 ---
 
 ##  Features
@@ -34,4 +36,5 @@ SE_CICD/
 └── README.md          # Project documentation
 
 ```
-Docker HUB URL : [Docker Repo Link](https://hub.docker.com/repository/docker/krishnachaitanya1605/imt2023039/general)
+Docker HUB URL : [Docker Repo Link](https://hub.docker.com/r/krishnachaitanya1605/imt2023039)
+
